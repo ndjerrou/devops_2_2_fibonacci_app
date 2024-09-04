@@ -1,8 +1,21 @@
 services:
+  postgres:
+   image: postgres
+   environment:
+    - POSTGRES_PASSWORD=admin
+  redis:
+    image: redis
   api:
     build: 
       dockerfile: Dockerfile.dev
       context: ./server
+    environment:
+        - POSTGRES_PASSWORD=admin
+    volumes:
+      - /app/node_modules
+      - ./server:/app
+    depends_on:
+      - postgres
   nginx: 
     build: 
       dockerfile: Dockerfile.dev
