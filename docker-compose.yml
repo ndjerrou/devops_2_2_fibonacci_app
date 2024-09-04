@@ -1,0 +1,15 @@
+services:
+  api:
+    build: 
+      dockerfile: Dockerfile.dev
+      context: ./server
+  nginx: 
+    build: 
+      dockerfile: Dockerfile.dev
+      context: ./nginx
+    ports: 
+      - "3050:80"
+  client:
+    build:
+      dockerfile: Dockerfile.dev
+      context: ./client
