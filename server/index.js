@@ -6,7 +6,7 @@ const pg = require('pg');
 // init connection with pg through docker
 
 const redisClient = redis.createClient({
-  url: 'redis@redis',
+  url: 'redis://redis',
 });
 
 const init = async () => {
@@ -14,7 +14,7 @@ const init = async () => {
 };
 
 redisClient.on('error', err => console.log('ERROR Connection Redis : ', err));
-
+redisClient.on('connect', () => console.log('Connected to Redis'));
 init();
 
 const app = express();
