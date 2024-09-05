@@ -1,7 +1,8 @@
-const express = require('express');
-const redis = require('redis');
+import express from 'express';
+import redis from 'redis';
 
-const { Pool } = require('pg');
+import pkg from 'pg';
+const { Pool } = pkg;
 
 // init connection with pg through docker
 const pgClient = new Pool({
@@ -19,39 +20,33 @@ pgClient.connect((err, client) => {
   console.log('Connected to PostgreSQL instance');
 });
 
-const redisClient = redis.createClient({
-  url: 'redis://redis',
-  // protocol//user:password@host:port
-});
-
-const redisPublisher = redisClient.duplicate();
-
-const init = async () => {
-  await redisClient.connect();
-};
+const redisClient = redis.createClient({ host: 'redis', port: 6379 });
 
 redisClient.on('error', err => console.log('ERROR Connection Redis : ', err));
 redisClient.on('connect', () => console.log('Connected to Redis'));
 
-init();
+const redisPublisher = redisClient.duplicate();
 
 const app = express();
 
 app.use(express.json());
 
-app.get('/values/current', async (req, res) => {
-  const values = await redisClient.hGetAll('values');
-
-  res.send(values);
+app.get('/values/current', (req, res) => {
+  redisClient.hgetall('values', (err, values) => {
+    res.send(values);
+  });
 });
 
 // grabbing visited indexes
 app.get('/values/all', async (req, res) => {
   // with pg, grabd the visited indexes
   // @TODO
-  const values = await pgClient.query('SELECT * from values');
-
-  res.send(values.rows);
+  try {
+    const values = await pgClient.query('SELECT * from values');
+    res.send(values.rows);
+  } catch (err) {
+    console.log(err.message);
+  }
 });
 
 app.post('/values', (req, res) => {

@@ -1,12 +1,11 @@
-const redis = require('redis');
+import redis from 'redis';
 
-const client = redis.createClient();
+const redisClient = redis.createClient({ host: 'redis', port: 6379 });
 
-(async () => {
-  await client.connect();
-})();
+const sub = redisClient.duplicate();
 
-const sub = client.duplicate();
+redisClient.on('error', err => console.log('ERROR Connection Redis : ', err));
+redisClient.on('connect', () => console.log('Connected to Redis'));
 
 const fib = index => {
   if (index < 2) return 1;
@@ -14,5 +13,7 @@ const fib = index => {
 };
 
 sub.on('message', (channel, message) => {
-  redisClient.hset('values', message, fib(message));
+  console.log(typeof message);
+  redisClient.hset('values', message, fib(+message));
 });
+sub.subscribe('calculateFib');

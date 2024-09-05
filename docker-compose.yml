@@ -1,10 +1,14 @@
 services:
+  worker:
+    build:
+      dockerfile: Dockerfile.dev
+      context: ./worker
   postgres:
    image: postgres
    environment:
     - POSTGRES_PASSWORD=admin
   redis:
-    image: redis
+    image: "redis:latest"
   api:
     build: 
       dockerfile: Dockerfile.dev
@@ -16,7 +20,11 @@ services:
       - ./server:/app
     depends_on:
       - postgres
-  nginx: 
+  nginx:
+    depends_on:
+      - api
+      - client
+    restart: always
     build: 
       dockerfile: Dockerfile.dev
       context: ./nginx
@@ -26,3 +34,6 @@ services:
     build:
       dockerfile: Dockerfile.dev
       context: ./client
+    volumes:
+      - /app/node_modules
+      - ./client:/app
